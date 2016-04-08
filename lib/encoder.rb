@@ -36,7 +36,6 @@ class Encoder
     @root_node = queue.first
     # the last node is the root node and the tree is complete
     # now count the number of nodes and leaf nodes
-
     "Tree made with #{count_nodes(@root_node)} total nodes and #{count_leaves(@root_node)} leaf nodes"
   end
 
@@ -49,7 +48,7 @@ class Encoder
     queue.sort_by { |node| node.number }
   end
 
-  def count_nodes(node)
+  def count_nodes(node = @root_node)
     nodes  = 0
     nodes += count_nodes(node.left)  if node.left != nil
     nodes += 1
@@ -57,7 +56,7 @@ class Encoder
     nodes
   end
 
-  def count_leaves(node)
+  def count_leaves(node = @root_node)
     leaves = 0
     leaves += count_leaves(node.left)  if node.left != nil
     leaves += 1 if node.left == nil and node.right == nil
@@ -67,21 +66,43 @@ class Encoder
 
 
   # ENCODE SINGLE CHARACTER USING TREE
-  def char_to_code(char)
+  def char_to_code(char, node = @root_node)
+    bytes = ""
+    if node.left != nil and node.left.string.include?(char)
+        bytes = "0" + char_to_code(char, node.left)
+    elsif node.right != nil and node.right.string.include?(char)
+        bytes = "1" + char_to_code(char, node.right)
+    end
+    bytes
+  end
+
+  def encode_message
 
   end
 
   # ORIGINAL BITSTRING
   # RETURN BITSTRING OF ORIGINAL MESSAGE AS STRING
+  def original_bitstring
+      @message.unpack("B*").first
+  end
+
+  def original_bitlength
+    original_bitstring.length
+  end
 
   # CODED BITSTRING
   # PRINT THAT ENCODED STRING THAT SHITS SHORTERRRRR WHAAAA?
+  def coded_bitstring
+    @message.chars.map { |char| char_to_code(char) }.join("")
+  end
 
-  # ORIGINAL BITLENGTH
-  # SIZE OF ORIGINAL BITSTRING
+  def coded_bitlength
+    coded_bitstring.length
+  end
 
-  # CODED BITLENGTH
-  # PROVE THAT SHITS SHORTER WITH MATH
+  def coding_efficiency
+    "#{(coded_bitlength / original_bitlength.to_f * 100).round(1)}%"
+  end
 
   # CODING EFFICIENCY
   # HOW MUCH SHORTER PERRCEEENNNTAAAGGGEEESSSS LEEEETTTSSS GOOOOOOOOOOO
