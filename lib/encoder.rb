@@ -2,12 +2,22 @@ require_relative 'node'
 
 class Encoder
 
+  PREDETERMINED_ORDER = [
+  "\n","\t"," ","a","b","c","d","e","f","g","h","i","j","k",
+  "l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
+  "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O",
+  "P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3",
+  "4","5","6","7","8","9","~","!","@","#","$","%","^","&","*",
+  "(",")","_","+","-","=","[","]","\\",";","'",",",".","/","<",
+  ">","?",":","\"","{","}","|"
+  ]
+
   attr_reader :message
-  # TAKE IN MESSAGE AT INIATLIZE
+
   def initialize(message)
     @message = message
   end
-  # MAKE CHARACTER COUNT HASH AND SORT BY NUMBER OF CHARACTERS
+
   def character_counts
     count = Hash.new(0)
     @message.chars.each do |char|
@@ -16,12 +26,11 @@ class Encoder
     count
   end
 
-  # BUILD THE FUCKING TREE DAWG
   def build_tree
     queue = priority_queue
     until queue.size == 1
       queue = sort_queue(queue)
-      # remove the two nodes with hte highest priority
+      # remove the two nodes with the highest priority
       node1 = queue.shift
       node2 = queue.shift
       # create a new internal node with these two nodes as children and with
@@ -39,7 +48,6 @@ class Encoder
     "Tree made with #{count_nodes(@root_node)} total nodes and #{count_leaves(@root_node)} leaf nodes"
   end
 
-  # INTERMEDIARY STEP FOR TREE CREATE PRIORITY ARRAY OF NODESS WHAT????
   def priority_queue
     queue = character_counts.map { |key, value| Node.new(key, value) }
   end
@@ -64,8 +72,6 @@ class Encoder
     leaves
   end
 
-
-  # ENCODE SINGLE CHARACTER USING TREE
   def char_to_code(char, node = @root_node)
     bytes = ""
     if node.left != nil and node.left.string.include?(char)
@@ -80,8 +86,6 @@ class Encoder
 
   end
 
-  # ORIGINAL BITSTRING
-  # RETURN BITSTRING OF ORIGINAL MESSAGE AS STRING
   def original_bitstring
       @message.unpack("B*").first
   end
@@ -90,10 +94,12 @@ class Encoder
     original_bitstring.length
   end
 
-  # CODED BITSTRING
-  # PRINT THAT ENCODED STRING THAT SHITS SHORTERRRRR WHAAAA?
+  def coded_array
+    @message.chars.map { |char| char_to_code(char) }
+  end
+
   def coded_bitstring
-    @message.chars.map { |char| char_to_code(char) }.join("")
+    coded_array.join("")
   end
 
   def coded_bitlength
@@ -104,11 +110,31 @@ class Encoder
     "#{(coded_bitlength / original_bitlength.to_f * 100).round(1)}%"
   end
 
-  # CODING EFFICIENCY
-  # HOW MUCH SHORTER PERRCEEENNNTAAAGGGEEESSSS LEEEETTTSSS GOOOOOOOOOOO
+  def tree_structure
+    break_down_tree.unshift(break_down_tree.length).unshift(coded_array.size)
+  end
 
-  # FILE SHIT?!
-  # I DUNNO DEAL WITH THAT LATER
+  def write_to_file(filename)
+    # io = File.open(...)
+    # len = io.read(2).unpack("v")
+    # name = io.read(len)
+    # width, height = io.read(8).unpack("VV")
+    # puts "Rectangle #{name} is #{width} x #{height}"
+    io = File.open(filename, 'w')
+    io.write(tree_structure.pack("#{"C*" * tree_structure.size}" ))
+    # require 'pry'
+    # binding.pry
+    io.write(coded_array.pack("#{"B*" * coded_array.size}"))
+    io.close
+    puts PREDETERMINED_ORDER.size
+    puts coded_array.size
+  end
+
+  def break_down_tree
+    PREDETERMINED_ORDER.map do |symbol|
+      character_counts[symbol].nil? ? 0 : character_counts[symbol]
+    end << (coded_bitlength % 8)
+  end
 
 
 end

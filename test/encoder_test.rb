@@ -1,3 +1,4 @@
+require_relative 'test_helper'
 require_relative '../lib/encoder'
 require 'minitest/autorun'
 
@@ -110,4 +111,16 @@ class EncoderTest < Minitest::Test
 
     assert_equal "46.6%", encoder.coding_efficiency
   end
+
+  def test_something
+    message = "That's no moon, it's a space station!"
+    encoder = Encoder.new(message)
+    # require 'pry'
+    # binding.pry
+    encoder.build_tree
+    encoder.write_to_file('message.compressed')
+    assert_equal 0, encoder.tree_structure
+    assert_equal 0, encoder.break_down_tree.pack("U*").unpack("U*")
+  end
+
 end
